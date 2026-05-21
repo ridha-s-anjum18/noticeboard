@@ -12,7 +12,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('board')
   const [toast, setToast] = useState(null)
   const [notices, setNotices] = useState([])
-  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -74,14 +73,6 @@ export default function App() {
             Hello, <span>{session ? greeting : 'Visitor'}</span>!
           </div>
           <div className="topbar-right">
-            <div className="search-bar">
-              <span className="search-icon">🔍</span>
-              <input
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-              />
-            </div>
             <div className="live-badge">
               <span className="live-dot" />
               Realtime
@@ -94,39 +85,42 @@ export default function App() {
           </div>
         </header>
 
-        {/* Main grid */}
+        {/* Main content for selected tab */}
         <main className="page-body">
-          {/* Notice Board - spans 2 cols */}
-          <div className="col-span-2">
-            <div className="card">
-              <NoticeBoard session={session} onToast={showToast} />
-            </div>
-          </div>
-
-          {/* Right column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {/* Post form — only if signed in */}
-            {session && <NoticeForm session={session} />}
-
-            {/* Stats */}
-            <StatsPanel notices={notices} session={session} />
-
-            {/* Sign in prompt for guests */}
-            {!session && (
-              <div className="card" style={{ textAlign: 'center', padding: 28 }}>
-                <div style={{ fontSize: 32, marginBottom: 10 }}>🔒</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
-                  Want to post?
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-                  Sign in to post notices, announcements, and events.
-                </div>
-                <button className="btn-primary" onClick={() => setShowAuth(true)}>
-                  Sign In to Post
-                </button>
+          {activeTab === 'board' && (
+            <div className="col-span-2">
+              <div className="card">
+                <NoticeBoard session={session} onToast={showToast} />
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {activeTab === 'post' && (
+            <div className="col-span-2">
+              {session ? (
+                <NoticeForm session={session} />
+              ) : (
+                <div className="card" style={{ textAlign: 'center', padding: 28 }}>
+                  <div style={{ fontSize: 32, marginBottom: 10 }}>🔒</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+                    Sign in to post notices
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+                    Only signed-in users can publish announcements and events.
+                  </div>
+                  <button className="btn-primary" onClick={() => setShowAuth(true)}>
+                    Sign In to Post
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'stats' && (
+            <div className="col-span-2">
+              <StatsPanel notices={notices} session={session} />
+            </div>
+          )}
         </main>
       </div>
 
